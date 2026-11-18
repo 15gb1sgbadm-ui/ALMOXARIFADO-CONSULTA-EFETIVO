@@ -1118,8 +1118,9 @@
         // Normalizamos os campos-chave para string assim que os dados chegam
         // da API, então toda comparação posterior compara string com string.
         function normalizarEstoque(dados) {
-            return (dados || []).map(d => ({
+            return (dados || []).map((d, i) => ({
                 ...d,
+                rowId: i,
                 almoxarifado: String(d.almoxarifado ?? ''),
                 categoria: String(d.categoria ?? ''),
                 item: String(d.item ?? ''),
@@ -1295,7 +1296,7 @@
                     ? `<td class="item-clickable" title="Ver mais informações">${escapeHtml(item.item)}<span class="info-icon" aria-hidden="true">&#9432;</span>${dicaHtml}</td>`
                     : `<td>${escapeHtml(item.item)}${dicaHtml}</td>`;
                 return `
-                <tr data-almoxarifado="${escapeHtml(item.almoxarifado)}" data-categoria="${escapeHtml(item.categoria)}" data-item="${escapeHtml(item.item)}" data-tamanho="${escapeHtml(tamanho)}">
+                <tr data-row-id="${item.rowId}" data-almoxarifado="${escapeHtml(item.almoxarifado)}" data-categoria="${escapeHtml(item.categoria)}" data-item="${escapeHtml(item.item)}" data-tamanho="${escapeHtml(tamanho)}">
                     <td>${escapeHtml(item.almoxarifado)}</td>
                     <td>${escapeHtml(item.categoria)}</td>
                     ${itemCelula}
@@ -1460,13 +1461,9 @@
 
         function abrirDetalhesItem(row) {
             if (!row) return;
-            const { almoxarifado, categoria, item, tamanho } = row.dataset;
-            const dados = estadoGlobal.estoque.find(d =>
-                d.almoxarifado === almoxarifado &&
-                d.categoria === categoria &&
-                d.item === item &&
-                (d.tamanho || '-') === tamanho
-            );
+            // Localiza pelo rowId (linha exata): unidades com mesmo nome/tamanho
+            // (ex.: Rádios HT) não trazem mais os dados e as fotos umas das outras.
+            const dados = estadoGlobal.estoque.find(d => String(d.rowId) === row.dataset.rowId);
             if (!dados) return;
 
             document.getElementById('detalhesItemTitulo').textContent = dados.item;
