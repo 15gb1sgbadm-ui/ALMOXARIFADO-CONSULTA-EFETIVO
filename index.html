@@ -1120,7 +1120,7 @@
         function normalizarEstoque(dados) {
             return (dados || []).map((d, i) => ({
                 ...d,
-                rowId: i,
+                rowId: d.id ? String(d.id) : String(i),
                 almoxarifado: String(d.almoxarifado ?? ''),
                 categoria: String(d.categoria ?? ''),
                 item: String(d.item ?? ''),
